@@ -37,6 +37,7 @@ Function F_SplineXY(ByVal HairetuXY, X#)
     F_SplineXY = Output_Y
     
 End Function
+
 Function F_SplineXYByXList(ByVal HairetuXY, ByVal XList)
     'スプライン補間計算を行う
     '＜出力値の説明＞
@@ -72,6 +73,7 @@ Function F_SplineXYByXList(ByVal HairetuXY, ByVal XList)
     F_SplineXYByXList = Output_YList
     
 End Function
+
 Function F_SplineXYPara(ByVal HairetuXY, BunkatuN&)
     'パラメトリック関数形式でスプライン補間を行う
     'HairetuX,HairetuYがどちらも単調増加、単調減少でない場合に用いる。
@@ -122,6 +124,7 @@ Function F_SplineXYPara(ByVal HairetuXY, BunkatuN&)
     F_SplineXYPara = OutputXYList
     
 End Function
+
 Function F_Spline#(ByVal HairetuX, ByVal HairetuY, X#)
         
     '20171124修正
@@ -220,6 +223,7 @@ Function F_Spline#(ByVal HairetuX, ByVal HairetuY, X#)
     F_Spline = Output_Y
 
 End Function
+
 Function F_SplinePara(ByVal HairetuX, ByVal HairetuY, BunkatuN&)
     'パラメトリック関数形式でスプライン補間を行う
     'HairetuX,HairetuYがどちらも単調増加、単調減少でない場合に用いる。
@@ -296,6 +300,7 @@ Function F_SplinePara(ByVal HairetuX, ByVal HairetuY, BunkatuN&)
     F_SplinePara = Output
     
 End Function
+
 Function F_SplineByXList(ByVal HairetuX, ByVal HairetuY, ByVal XList)
     'スプライン補間計算を行う
     '＜出力値の説明＞

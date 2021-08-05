@@ -5,6 +5,7 @@ Option Explicit
 Function 逆行列(Matrix)
     逆行列 = F_Minverse(Matrix)
 End Function
+
 Function 行列式(Matrix)
     行列式 = F_MDeterm(Matrix)
 End Function
@@ -70,7 +71,8 @@ Function F_MMult(ByVal Matrix1, ByVal Matrix2)
     '出力※※※※※※※※※※※※※※※※※※※※※※※※※※※
     F_MMult = Output
     
-    End Function
+End Function
+
 Sub 正方行列かチェック(Matrix)
     '20210603追加
     
@@ -183,8 +185,7 @@ Function F_MDeterm(Matrix)
     '出力※※※※※※※※※※※※※※※※※※※※※※※※※※※
     F_MDeterm = Output
     
-    End Function
-
+End Function
 
 Function F_Mgyoirekae(Matrix, Row1%, Row2%)
     '20210603改良
