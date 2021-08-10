@@ -63,6 +63,7 @@ Copyright (c) 2021 YujiFukami
 
 ![SplineByArrayX1D,SplineXYByArrayX1Dのグラフ](https://user-images.githubusercontent.com/73621859/128811939-a2cd2a20-e5af-480b-b384-2b5f03869193.jpg)
 
+![XYグラフ](https://user-images.githubusercontent.com/73621859/128813230-4aecfb81-a978-4c0f-bc6a-67682084f17e.jpg)
 ![SplineByArrayX1D,SplineXYByArrayXのワークシート関数入力](https://user-images.githubusercontent.com/73621859/128811938-b73fb46f-932e-41ef-8136-509f48b9edda.jpg)
 
 ## SplinePara(ArrayX1D, ArrayY1D, BunkatuN), SplineXYPara(ArrayXY2D, BunkatuN)
@@ -90,4 +91,5 @@ Copyright (c) 2021 YujiFukami
 
 ![SplinePara, SplineXYParaのグラフ](https://user-images.githubusercontent.com/73621859/128811937-61396b6f-712e-4bb6-ad9c-b08a466a7387.jpg)
 
+![XYグラフ](https://user-images.githubusercontent.com/73621859/128813230-4aecfb81-a978-4c0f-bc6a-67682084f17e.jpg)
 ![SplineXYParaのワークシート関数入力](https://user-images.githubusercontent.com/73621859/128811940-bad25131-eadd-4d73-b3d0-3c492ad9122b.jpg)
