@@ -13,6 +13,7 @@ Private Sub TestSplineXY()
                 Array(5, 8.18738634627902), _
                 Array(6, 4.42233332813268)) _
                 ))
+    
     InputX = 3.5
     OutputY = SplineXY(ArrayXY2D, InputX)
     
@@ -58,6 +59,7 @@ Private Sub TestSplineXYByArrayX1D()
     InputArrayX1D = Application.Transpose(Application.Transpose( _
                     Array(0.704709737423495, 1.15605119826871, 1.68490822086298, 2.13925473863431, 2.58350091448881, 3.13230954582088, 3.27625171436593, 3.96995547976061, 4.5878879819556, 5.29470346416526) _
                     ))
+    
     
     Dim OutputArrayY1D
     OutputArrayY1D = SplineXYByArrayX1D(ArrayXY2D, InputArrayX1D)
@@ -145,6 +147,14 @@ Function SplineXY(ByVal ArrayXY2D, InputX#)
     'X:補間一のXの値
     
     '入力値のチェック及び修正'※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    '入力がセルから(ワークシート関数)だった場合の処理
+    Dim RangeNaraTrue As Boolean
+    RangeNaraTrue = False
+    If IsObject(ArrayXY2D) Then
+        ArrayXY2D = ArrayXY2D.Value
+        RangeNaraTrue = True
+    End If
+    
     '行列の開始要素を1に変更（計算しやすいから）
     If LBound(ArrayXY2D, 1) <> 1 Or LBound(ArrayXY2D, 2) <> 1 Then
         ArrayXY2D = Application.Transpose(Application.Transpose(ArrayXY2D))
@@ -166,8 +176,14 @@ Function SplineXY(ByVal ArrayXY2D, InputX#)
     OutputY = Spline(ArrayX1D, ArrayY1D, InputX)
     
     '出力※※※※※※※※※※※※※※※※※※※※※※※※※※※
-    SplineXY = OutputY
-
+    If RangeNaraTrue Then
+        'ワークシート関数の場合
+        SplineXY = Application.Transpose(OutputY)
+    Else
+        'VBA上での処理の場合
+        SplineXY = OutputY
+    End If
+    
 End Function
 
 Function SplineXYByArrayX1D(ByVal ArrayXY2D, ByVal InputArrayX1D)
@@ -181,6 +197,17 @@ Function SplineXYByArrayX1D(ByVal ArrayXY2D, ByVal InputArrayX1D)
     'InputArrayX1D:補間位置Xが格納された配列
     
     '入力値のチェック及び修正'※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    '入力がセルから(ワークシート関数)だった場合の処理
+    Dim RangeNaraTrue As Boolean
+    RangeNaraTrue = False
+    If IsObject(ArrayXY2D) Then
+        ArrayXY2D = ArrayXY2D.Value
+        RangeNaraTrue = True
+    End If
+    If IsObject(InputArrayX1D) Then
+        InputArrayX1D = Application.Transpose(InputArrayX1D.Value)
+    End If
+
     '行列の開始要素を1に変更（計算しやすいから）
     If LBound(ArrayXY2D, 1) <> 1 Or LBound(ArrayXY2D, 2) <> 1 Then
         ArrayXY2D = Application.Transpose(Application.Transpose(ArrayXY2D))
@@ -202,7 +229,13 @@ Function SplineXYByArrayX1D(ByVal ArrayXY2D, ByVal InputArrayX1D)
     OutputArrayY1D = SplineByArrayX1D(ArrayX1D, ArrayY1D, InputArrayX1D)
     
     '出力※※※※※※※※※※※※※※※※※※※※※※※※※※※
-    SplineXYByArrayX1D = OutputArrayY1D
+    If RangeNaraTrue = True Then
+        'ワークシート関数の場合
+        SplineXYByArrayX1D = Application.Transpose(OutputArrayY1D)
+    Else
+        'VBA上での処理の場合
+        SplineXYByArrayX1D = OutputArrayY1D
+    End If
     
 End Function
 
@@ -219,6 +252,11 @@ Function SplineXYPara(ByVal ArrayXY2D, BunkatuN&)
     'パラメトリック関数の分割個数（出力されるXList,YListの要素数は(分割個数+1)）
     
     '入力値のチェック及び修正'※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    '入力がセルから(ワークシート関数)だった場合の処理
+    If IsObject(ArrayXY2D) Then
+        ArrayXY2D = ArrayXY2D.Value
+    End If
+        
     '行列の開始要素を1に変更（計算しやすいから）
     Dim StartNum%
     StartNum = LBound(ArrayXY2D) '入力配列の要素の開始番号を取っておく（出力値に合わせるため）
@@ -273,6 +311,14 @@ Function Spline#(ByVal ArrayX1D, ByVal ArrayY1D, InputX#)
     'InputX：補間位置のXの値
     
     '入力値のチェック及び修正※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    '入力がセルから(ワークシート関数)だった場合の処理
+    If IsObject(ArrayX1D) Then
+        ArrayX1D = Application.Transpose(ArrayX1D.Value)
+    End If
+    If IsObject(ArrayY1D) Then
+        ArrayY1D = Application.Transpose(ArrayY1D.Value)
+    End If
+    
     '行列の開始要素を1に変更（計算しやすいから）
     If LBound(ArrayX1D, 1) <> 1 Then
         ArrayX1D = Application.Transpose(Application.Transpose(ArrayX1D))
@@ -368,6 +414,14 @@ Function SplinePara(ByVal ArrayX1D, ByVal ArrayY1D, BunkatuN&)
     'パラメトリック関数の分割個数（出力されるOutputArrayX1D,OutputArrayY1Dの要素数は(分割個数+1)）
     
     '入力値のチェック及び修正※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    '入力がセルから(ワークシート関数)だった場合の処理
+    If IsObject(ArrayX1D) Then
+        ArrayX1D = Application.Transpose(ArrayX1D.Value)
+    End If
+    If IsObject(ArrayY1D) Then
+        ArrayY1D = Application.Transpose(ArrayY1D.Value)
+    End If
+    
     Dim StartNum%
     '行列の開始要素を1に変更（計算しやすいから）
     StartNum = LBound(ArrayX1D, 1) '入力配列の要素の開始番号を取っておく（出力値に合わせるため）
@@ -444,6 +498,20 @@ Function SplineByArrayX1D(ByVal ArrayX1D, ByVal ArrayY1D, ByVal InputArrayX1D)
     'InputArrayX1D:補間位置Xが格納された配列
 
     '入力値のチェック及び修正※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    '入力がセルから(ワークシート関数)だった場合の処理
+    Dim RangeNaraTrue As Boolean
+    RangeNaraTrue = False
+    If IsObject(ArrayX1D) Then
+        ArrayX1D = Application.Transpose(ArrayX1D.Value)
+        RangeNaraTrue = True
+    End If
+    If IsObject(ArrayY1D) Then
+        ArrayY1D = Application.Transpose(ArrayY1D.Value)
+    End If
+    If IsObject(InputArrayX1D) Then
+        InputArrayX1D = Application.Transpose(InputArrayX1D.Value)
+    End If
+    
     Dim StartNum%
     '行列の開始要素を1に変更（計算しやすいから）
     If LBound(ArrayX1D, 1) <> 1 Then
@@ -563,7 +631,13 @@ Function SplineByArrayX1D(ByVal ArrayX1D, ByVal ArrayY1D, ByVal InputArrayX1D)
         End If
     End If
     
-    SplineByArrayX1D = Output
+    If RangeNaraTrue Then
+        'ワークシート関数の場合
+        SplineByArrayX1D = Application.Transpose(Output)
+    Else
+        'VBA上での処理の場合
+        SplineByArrayX1D = Output
+    End If
     
 End Function
 
@@ -645,3 +719,5 @@ Function SplineKeisu(ByVal ArrayX1D, ByVal ArrayY1D)
     SplineKeisu = Output
 
 End Function
+
+
