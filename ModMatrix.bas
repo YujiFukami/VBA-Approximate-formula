@@ -10,7 +10,6 @@ Function 行列式(Matrix)
     行列式 = F_MDeterm(Matrix)
 End Function
 
-
 Function F_MMult(ByVal Matrix1, ByVal Matrix2)
     'F_MMult(Matrix1, Matrix2)
     'F_MMult(配列①,配列②)
@@ -85,6 +84,7 @@ Sub 正方行列かチェック(Matrix)
     End If
 
 End Sub
+
 Function F_Minverse(ByVal Matrix)
     '20210603改良
     'F_Minverse(input_M)
