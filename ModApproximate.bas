@@ -142,9 +142,9 @@ Function SplineXY(ByVal ArrayXY2D, InputX#)
     '入力値Xに対する補間値Y
     
     '＜入力値の説明＞
-    'HariretuXY：補間の対象となるX,Yの値が格納された配列
+    'ArrayXY2D：補間の対象となるX,Yの値が格納された配列
     'ArrayXY2Dの1列目がX,2列目がYとなるようにする。
-    'X:補間一のXの値
+    'X:補間位置のXの値
     
     '入力値のチェック及び修正'※※※※※※※※※※※※※※※※※※※※※※※※※※※
     '入力がセルから(ワークシート関数)だった場合の処理
@@ -308,7 +308,7 @@ Function Spline#(ByVal ArrayX1D, ByVal ArrayY1D, InputX#)
     '<入力値の説明>
     'ArrayX1D：補間の対象とする配列X
     'ArrayY1D：補間の対象とする配列Y
-    'InputX：補間位置のXの値
+    'InputX  ：補間位置のXの値
     
     '入力値のチェック及び修正※※※※※※※※※※※※※※※※※※※※※※※※※※※
     '入力がセルから(ワークシート関数)だった場合の処理
@@ -545,7 +545,8 @@ Function SplineByArrayX1D(ByVal ArrayX1D, ByVal ArrayY1D, ByVal InputArrayX1D)
     End If
 
     '計算処理※※※※※※※※※※※※※※※※※※※※※※※※※※※
-    Dim N%, K%, A, B, C, D
+    Dim A, B, C, D
+    Dim I&, J&, K&, M&, N& '数え上げ用(Long型)
     
     'スプライン計算用の各係数を計算する。参照渡しでA,B,C,Dに格納
     Dim Dummy
