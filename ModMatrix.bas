@@ -19,7 +19,8 @@ Function F_MMult(ByVal Matrix1, ByVal Matrix2)
     
     '入力値のチェックと修正※※※※※※※※※※※※※※※※※※※※※※※※※※※
     '配列の次元チェック
-    Dim JigenCheck1%, JigenCheck2%
+    Dim JigenCheck1 As Integer
+    Dim JigenCheck2 As Integer
     On Error Resume Next
     JigenCheck1 = UBound(Matrix1, 2) '配列の次元が1ならエラーとなる
     JigenCheck2 = UBound(Matrix2, 2) '配列の次元が1ならエラーとなる
@@ -50,9 +51,13 @@ Function F_MMult(ByVal Matrix1, ByVal Matrix2)
     End If
     
     '計算処理※※※※※※※※※※※※※※※※※※※※※※※※※※※
-    Dim I%, J%, K%, M%, N% '数え上げ用(Integer型)
-    Dim M2%
-    Dim Output#() '出力する配列
+    Dim I        As Integer
+    Dim J        As Integer
+    Dim K        As Integer
+    Dim M        As Integer
+    Dim N        As Integer
+    Dim M2       As Integer
+    Dim Output() As Double '出力する配列
     N = UBound(Matrix1, 1) '配列1の行数
     M = UBound(Matrix1, 2) '配列1の列数
     M2 = UBound(Matrix2, 2) '配列2の列数
@@ -101,12 +106,14 @@ Function F_Minverse(ByVal Matrix)
     Call 正方行列かチェック(Matrix)
     
     '計算処理※※※※※※※※※※※※※※※※※※※※※※※※※※※
-    Dim I%, J%, K%, M%, M2%, N% '数え上げ用(Integer型)
+    Dim I        As Integer
+    Dim J        As Integer
+    Dim N        As Integer
+    Dim Output() As Double
     N = UBound(Matrix, 1)
-    Dim Output#()
     ReDim Output(1 To N, 1 To N)
     
-    Dim detM# '行列式の値を格納
+    Dim detM As Double '行列式の値を格納
     detM = F_MDeterm(Matrix) '行列式を求める
     
     Dim Mjyokyo '指定の列・行を除去した配列を格納
@@ -144,7 +151,10 @@ Function F_MDeterm(Matrix)
     Call 正方行列かチェック(Matrix)
     
     '計算処理※※※※※※※※※※※※※※※※※※※※※※※※※※※
-    Dim I%, J%, K%, M%, N% '数え上げ用(Integer型)
+    Dim I As Integer
+    Dim J As Integer
+    Dim K As Integer
+    Dim N As Integer
     N = UBound(Matrix, 1)
     
     Dim Matrix2 '掃き出しを行う行列
@@ -175,7 +185,7 @@ Function F_MDeterm(Matrix)
     
     
     '行列式の計算
-    Dim Output#
+    Dim Output As Double
     Output = 1
     
     For I = 1 To N '各(I列,I行)を掛け合わせていく
@@ -187,13 +197,17 @@ Function F_MDeterm(Matrix)
     
 End Function
 
-Function F_Mgyoirekae(Matrix, Row1%, Row2%)
+Function F_Mgyoirekae(Matrix, Row1 As Integer, Row2 As Integer)
     '20210603改良
     'F_Mgyoirekae(Matrix, Row1, Row2)
     'F_Mgyoirekae(配列,指定行番号①,指定行番号②)
     '行列Matrixの①行と②行を入れ替える
     
-    Dim I%, J%, K%, M%, N% '数え上げ用(Integer型)
+    Dim I     As Integer
+    Dim J     As Integer
+    Dim K     As Integer
+    Dim M     As Integer
+    Dim N     As Integer
     Dim Output
     
     Output = Matrix
@@ -207,28 +221,29 @@ Function F_Mgyoirekae(Matrix, Row1%, Row2%)
     F_Mgyoirekae = Output
 End Function
 
-Function F_Mgyohakidasi(Matrix, Row%, Col%)
+Function F_Mgyohakidasi(Matrix, Row As Integer, Col As Integer)
     '20210603改良
     'F_Mgyohakidasi(Matrix, Row, Col)
     'F_Mgyohakidasi(配列,指定行,指定列)
     '行列MatrixのRow行､Col列の値で各行を掃き出す
     
-    Dim I%, J%, K%, M%, N% '数え上げ用(Integer型)
+    Dim I     As Integer
+    Dim J     As Integer
+    Dim N     As Integer
     Dim Output
     
     Output = Matrix
     N = UBound(Output, 1) '行数取得
     
     Dim Hakidasi '掃き出し元の行
-    Dim X# '掃き出し元の値
-    Dim Y#
+    Dim X As Double '掃き出し元の値
+    Dim Y As Double
     ReDim Hakidasi(1 To N)
     X = Matrix(Row, Col)
     
     For I = 1 To N '掃き出し元の1行を作成
         Hakidasi(I) = Matrix(Row, I)
     Next I
-    
     
     For I = 1 To N '各行
         If I = Row Then
@@ -251,20 +266,25 @@ Function F_Mgyohakidasi(Matrix, Row%, Col%)
     
 End Function
 
-Function F_Mjyokyo(Matrix, Row%, Col%)
+Function F_Mjyokyo(Matrix, Row As Integer, Col As Integer)
     '20210603改良
     'F_Mjyokyo(Matrix, Row, Col)
     'F_Mjyokyo(配列,指定行,指定列)
     '行列MatrixのRow行、Col列を除去した行列を返す
     
-    Dim I%, J%, K%, M%, N% '数え上げ用(Integer型)
+    Dim I As Integer
+    Dim J As Integer
+    Dim K As Integer
+    Dim M As Integer
+    Dim N As Integer '数え上げ用(Integer型)
     Dim Output '指定した行・列を除去後の配列
     
     N = UBound(Matrix, 1) '行数取得
     M = UBound(Matrix, 2) '列数取得
     ReDim Output(1 To N - 1, 1 To M - 1)
     
-    Dim I2%, J2%
+    Dim I2 As Integer
+    Dim J2 As Integer
     
     I2 = 0 '行方向数え上げ初期化
     For I = 1 To N
@@ -289,3 +309,5 @@ Function F_Mjyokyo(Matrix, Row%, Col%)
     F_Mjyokyo = Output
 
 End Function
+
+
