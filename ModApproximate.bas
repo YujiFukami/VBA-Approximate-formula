@@ -1,5 +1,46 @@
 Attribute VB_Name = "ModApproximate"
-'シート関数用近似、補間関数
+Option Explicit
+
+'TestSplineXY                    ・・・元場所：FukamiAddins3.ModApproximate
+'TestSpline                      ・・・元場所：FukamiAddins3.ModApproximate
+'TestSplineXYByArrayX1D          ・・・元場所：FukamiAddins3.ModApproximate
+'TestSplineByArrayX1D            ・・・元場所：FukamiAddins3.ModApproximate
+'TestSplineXYPara                ・・・元場所：FukamiAddins3.ModApproximate
+'TestSplinePara                  ・・・元場所：FukamiAddins3.ModApproximate
+'SplineXY                        ・・・元場所：FukamiAddins3.ModApproximate
+'SplineXYByArrayX1D              ・・・元場所：FukamiAddins3.ModApproximate
+'SplineXYPara                    ・・・元場所：FukamiAddins3.ModApproximate
+'SplineXYParaFast                ・・・元場所：FukamiAddins3.ModApproximate
+'Spline                          ・・・元場所：FukamiAddins3.ModApproximate
+'SplinePara                      ・・・元場所：FukamiAddins3.ModApproximate
+'SplineParaFast                  ・・・元場所：FukamiAddins3.ModApproximate
+'スプライン補間高速化用に分割処理・・・元場所：FukamiAddins3.ModApproximate
+'ExtractByRangeArray1D           ・・・元場所：FukamiAddins3.ModApproximate
+'SplineByArrayX1DFast            ・・・元場所：FukamiAddins3.ModApproximate
+'SplineByArrayX1D                ・・・元場所：FukamiAddins3.ModApproximate
+'SplineKeisu                     ・・・元場所：FukamiAddins3.ModApproximate
+'DPH                             ・・・元場所：FukamiAddins3.ModImmediate  
+'DebugPrintHairetu               ・・・元場所：FukamiAddins3.ModImmediate  
+'文字列を指定バイト数文字数に省略・・・元場所：FukamiAddins3.ModImmediate  
+'文字列の各文字累計バイト数計算  ・・・元場所：FukamiAddins3.ModImmediate  
+'文字列分解                      ・・・元場所：FukamiAddins3.ModImmediate  
+'ExtractArray1D                  ・・・元場所：FukamiAddins3.ModArray      
+'CheckArray1D                    ・・・元場所：FukamiAddins3.ModArray      
+'CheckArray1DStart1              ・・・元場所：FukamiAddins3.ModArray      
+'ExtractArray                    ・・・元場所：FukamiAddins3.ModArray      
+'CheckArray2D                    ・・・元場所：FukamiAddins3.ModArray      
+'CheckArray2DStart1              ・・・元場所：FukamiAddins3.ModArray      
+'UnionArray1D                    ・・・元場所：FukamiAddins3.ModArray      
+'F_Minverse                      ・・・元場所：FukamiAddins3.ModMatrix     
+'正方行列かチェック              ・・・元場所：FukamiAddins3.ModMatrix     
+'F_MDeterm                       ・・・元場所：FukamiAddins3.ModMatrix     
+'F_Mgyoirekae                    ・・・元場所：FukamiAddins3.ModMatrix     
+'F_Mgyohakidasi                  ・・・元場所：FukamiAddins3.ModMatrix     
+'F_Mjyokyo                       ・・・元場所：FukamiAddins3.ModMatrix     
+'F_MMult                         ・・・元場所：FukamiAddins3.ModMatrix     
+
+
+
 Private Sub TestSplineXY()
 'SplineXYの実行テスト
 
@@ -372,7 +413,6 @@ Function SplineXYParaFast(ByVal ArrayXY2D, BunkatuN As Long, PointCount As Long)
     
 End Function
 
-
 Function Spline(ByVal ArrayX1D, ByVal ArrayY1D, InputX As Double)
         
     '20171124修正
@@ -667,7 +707,6 @@ Function SplineParaFast(ByVal ArrayX1D, ByVal ArrayY1D, BunkatuN As Long, PointC
     SplineParaFast = Output
     
 End Function
-
 
 Private Function スプライン補間高速化用に分割処理(ByVal ArrayX1D, ByVal ArrayY1D, ByVal CalPoint1D, PointCount As Long)
 'スプライン補間高速化用に分割処理
@@ -1172,6 +1211,743 @@ Function SplineKeisu(ByVal ArrayX1D, ByVal ArrayY1D)
     
     SplineKeisu = Output
 
+End Function
+
+Private Sub DPH(ByVal Hairetu, Optional HyoujiMaxNagasa As Integer, Optional HairetuName As String)
+    '20210428追加
+    '入力高速化用に作成
+    
+    Call DebugPrintHairetu(Hairetu, HyoujiMaxNagasa, HairetuName)
+End Sub
+
+Private Sub DebugPrintHairetu(ByVal Hairetu, Optional HyoujiMaxNagasa As Integer, Optional HairetuName As String)
+'20201023追加
+'20211018 入力した配列がHairetu(1 to 1)の一次元配列の場合でも処理できるように修正
+
+    '二次元配列をイミディエイトウィンドウに見やすく表示する
+    
+    Dim I       As Long
+    Dim J       As Long
+    Dim M       As Long
+    Dim N       As Long
+    Dim TateMin As Long
+    Dim TateMax As Long
+    Dim YokoMin As Long
+    Dim YokoMax As Long
+
+    Dim WithTableHairetu             'テーブル付配列…イミディエイトウィンドウに表示する際にインデックス番号を表示したテーブルを追加した配列
+    Dim NagasaList
+    Dim MaxNagasaList                '各文字の文字列長さを格納、各列での文字列長さの最大値を格納
+    Dim NagasaOnajiList              '" "（半角スペース）を文字列に追加して各列で文字列長さを同じにした文字列を格納
+    Dim OutputList                   'イミディエイトウィンドウに表示する文字列を格納
+    Const SikiriMoji As String = "|" 'イミディエイトウィンドウに表示する時に各列の間に表示する「仕切り文字」
+    
+    '※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    '入力引数の処理
+    Dim Jigen1 As Long
+    Dim Jigen2 As Long
+    Dim Tmp
+    On Error Resume Next
+    Jigen2 = UBound(Hairetu, 2)
+    On Error GoTo 0
+    If Jigen2 = 0 Then '1次元配列は2次元配列にする
+        Jigen1 = UBound(Hairetu, 1) '20211018 入力した配列がHairetu(1 to 1)の一次元配列の場合でも処理できるように修正
+        If Jigen1 = 1 Then
+            Tmp = Hairetu(Jigen1)
+            ReDim Hairetu(1 To 1, 1 To 1)
+            Hairetu(1, 1) = Tmp
+        Else
+            Hairetu = Application.Transpose(Hairetu)
+        End If
+    End If
+    
+    TateMin = LBound(Hairetu, 1) '配列の縦番号（インデックス）の最小
+    TateMax = UBound(Hairetu, 1) '配列の縦番号（インデックス）の最大
+    YokoMin = LBound(Hairetu, 2) '配列の横番号（インデックス）の最小
+    YokoMax = UBound(Hairetu, 2) '配列の横番号（インデックス）の最大
+    
+    'テーブル付き配列の作成
+    ReDim WithTableHairetu(1 To TateMax - TateMin + 1 + 1, 1 To YokoMax - YokoMin + 1 + 1) 'テーブル追加の分で"+1"する。
+    '「TateMax -TateMin + 1」は入力した「Hairetu」の縦インデックス数
+    '「YokoMax -YokoMin + 1」は入力した「Hairetu」の横インデックス数
+    
+    For I = 1 To TateMax - TateMin + 1
+        WithTableHairetu(I + 1, 1) = TateMin + I - 1 '縦テーブル（Hairetuの縦インデックス番号）
+        For J = 1 To YokoMax - YokoMin + 1
+            WithTableHairetu(1, J + 1) = YokoMin + J - 1 '横テーブル（Hairetuの横インデックス番号）
+            WithTableHairetu(I + 1, J + 1) = Hairetu(I - 1 + TateMin, J - 1 + YokoMin) 'Hairetuの中の値
+        Next J
+    Next I
+    
+    '※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    'イミディエイトウィンドウに表示するときに各列の幅を同じに整えるために
+    '文字列長さとその各列の最大値を計算する。
+    '以下では「Hairetu」は扱わず、「WithTableHairetu」を扱う。
+    N = UBound(WithTableHairetu, 1) '「WithTableHairetu」の縦インデックス数（行数）
+    M = UBound(WithTableHairetu, 2) '「WithTableHairetu」の横インデックス数（列数）
+    ReDim NagasaList(1 To N, 1 To M)
+    ReDim MaxNagasaList(1 To M)
+    
+    Dim TmpStr As String
+    For J = 1 To M
+        For I = 1 To N
+        
+            If J > 1 And HyoujiMaxNagasa <> 0 Then
+                '最大表示長さが指定されている場合。
+                '1列目のテーブルはそのままにする。
+                TmpStr = WithTableHairetu(I, J)
+                WithTableHairetu(I, J) = 文字列を指定バイト数文字数に省略(TmpStr, HyoujiMaxNagasa)
+            End If
+            
+            NagasaList(I, J) = LenB(StrConv(WithTableHairetu(I, J), vbFromUnicode)) '全角と半角を区別して長さを計算する。
+            MaxNagasaList(J) = WorksheetFunction.Max(MaxNagasaList(J), NagasaList(I, J))
+            
+        Next I
+    Next J
+    
+    '※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    'イミディエイトウィンドウに表示するために" "(半角スペース)を追加して
+    '文字列長さを同じにする。
+    ReDim NagasaOnajiList(1 To N, 1 To M)
+    Dim TmpMaxNagasa As Long
+    
+    For J = 1 To M
+        TmpMaxNagasa = MaxNagasaList(J) 'その列の最大文字列長さ
+        For I = 1 To N
+            'Rept…指定文字列を指定個数連続してつなげた文字列を出力する。
+            '（最大文字数-文字数）の分" "（半角スペース）を後ろにくっつける。
+            NagasaOnajiList(I, J) = WithTableHairetu(I, J) & WorksheetFunction.Rept(" ", TmpMaxNagasa - NagasaList(I, J))
+       
+        Next I
+    Next J
+    
+    '※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    'イミディエイトウィンドウに表示する文字列を作成
+    ReDim OutputList(1 To N)
+    For I = 1 To N
+        For J = 1 To M
+            If J = 1 Then
+                OutputList(I) = NagasaOnajiList(I, J)
+            Else
+                OutputList(I) = OutputList(I) & SikiriMoji & NagasaOnajiList(I, J)
+            End If
+        Next J
+    Next I
+    
+    ''※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    'イミディエイトウィンドウに表示
+    Debug.Print HairetuName
+    For I = 1 To N
+        Debug.Print OutputList(I)
+    Next I
+    
+End Sub
+
+Private Function 文字列を指定バイト数文字数に省略(Mojiretu As String, ByteNum As Integer)
+    '20201023追加
+    '文字列を指定省略バイト文字数までの長さで省略する。
+    '省略された文字列の最後の文字は"."に変更する。
+    '例：Mojiretu = "魑魅魍魎" , ByteNum = 6 … 出力 = "魑魅.."
+    '例：Mojiretu = "魑魅魍魎" , ByteNum = 7 … 出力 = "魑魅魍."
+    '例：Mojiretu = "魑魅XX魎" , ByteNum = 6 … 出力 = "魑魅X."
+    '例：Mojiretu = "魑魅XX魎" , ByteNum = 7 … 出力 = "魑魅XX."
+    
+    Dim OriginByte As Integer '入力した文字列「Mojiretu」のバイト文字数
+    Dim Output                '出力する変数を格納
+    
+    '「Mojiretu」のバイト文字数計算
+    OriginByte = LenB(StrConv(Mojiretu, vbFromUnicode))
+    
+    If OriginByte <= ByteNum Then
+        '「Mojiretu」のバイト文字数計算が省略するバイト文字数以下なら
+        '省略はしない
+        Output = Mojiretu
+    Else
+    
+        Dim RuikeiByteList, BunkaiMojiretu
+        RuikeiByteList = 文字列の各文字累計バイト数計算(Mojiretu)
+        BunkaiMojiretu = 文字列分解(Mojiretu)
+        
+        Dim AddMoji As String
+        AddMoji = "."
+        
+        Dim I As Long, N As Long
+        N = Len(Mojiretu)
+        
+        For I = 1 To N
+            If RuikeiByteList(I) < ByteNum Then
+                Output = Output & BunkaiMojiretu(I)
+                
+            ElseIf RuikeiByteList(I) = ByteNum Then
+                If LenB(StrConv(BunkaiMojiretu(I), vbFromUnicode)) = 1 Then
+                    '例：Mojiretu = "魑魅魍魎" , ByteNum = 6 ,RuikeiByteList(3) = 6
+                    'Output = "魑魅.."
+                    Output = Output & AddMoji
+                Else
+                    '例：Mojiretu = "魑魅XX魎" , ByteNum = 6 ,RuikeiByteList(4) = 6
+                    'Output = "魑魅X."
+                    Output = Output & AddMoji & AddMoji
+                End If
+                
+                Exit For
+                
+            ElseIf RuikeiByteList(I) > ByteNum Then
+                '例：Mojiretu = "魑魅魍魎" , ByteNum = 7 ,RuikeiByteList(4) = 8
+                'Output = "魑魅魍."
+                Output = Output & AddMoji
+                Exit For
+            End If
+        Next I
+        
+    End If
+        
+    文字列を指定バイト数文字数に省略 = Output
+
+    
+End Function
+
+Private Function 文字列の各文字累計バイト数計算(Mojiretu As String)
+    '20201023追加
+
+    '文字列を1文字ずつに分解して、各文字のバイト文字長を計算し、
+    'その累計値を計算する。
+    '例：Mojiretu="新型EKワゴン"
+    '出力→Output = (2,4,5,6,7,10,12)
+    
+    Dim MojiKosu As Integer
+    Dim I        As Long
+    Dim TmpMoji  As String
+    Dim Output
+    MojiKosu = Len(Mojiretu)
+    ReDim Output(1 To MojiKosu)
+    
+    For I = 1 To MojiKosu
+        TmpMoji = Mid(Mojiretu, I, 1)
+        If I = 1 Then
+            Output(I) = LenB(StrConv(TmpMoji, vbFromUnicode))
+        Else
+            Output(I) = LenB(StrConv(TmpMoji, vbFromUnicode)) + Output(I - 1)
+        End If
+    Next I
+    
+    文字列の各文字累計バイト数計算 = Output
+    
+End Function
+
+Private Function 文字列分解(Mojiretu As String)
+    '20201023追加
+
+    '文字列を1文字ずつ分解して配列に格納
+    Dim I     As Long
+    Dim N     As Long
+    Dim Output
+    
+    N = Len(Mojiretu)
+    ReDim Output(1 To N)
+    For I = 1 To N
+        Output(I) = Mid(Mojiretu, I, 1)
+    Next I
+    
+    文字列分解 = Output
+    
+End Function
+
+Private Function ExtractArray1D(Array1D, StartNum As Long, EndNum As Long)
+'一次元配列の指定範囲を配列として抽出する
+'20211009
+
+'引数
+'Array1D ・・・一次元配列
+'StartNum・・・抽出範囲の開始番号
+'EndNum  ・・・抽出範囲の終了番号
+                                   
+    '引数チェック
+    Call CheckArray1D(Array1D, "Array1D")
+    Call CheckArray1DStart1(Array1D, "Array1D")
+    
+    Dim I As Long
+    Dim N As Long
+    N = UBound(Array1D, 1) '要素数
+    
+    If StartNum > EndNum Then
+        MsgBox ("抽出範囲の開始位置「StartNum」は、終了位置「EndNum」以下でなければなりません")
+        Stop
+        Exit Function
+    ElseIf StartNum < 1 Then
+        MsgBox ("抽出範囲の開始位置「StartNum」は1以上の値を入れてください")
+        Stop
+        Exit Function
+    ElseIf EndNum > N Then
+        MsgBox ("抽出範囲の終了行「EndNum」は抽出元の一次元配列の要素数" & N & "以下の値を入れてください")
+        Stop
+        Exit Function
+    End If
+    
+    '処理
+    Dim Output
+    ReDim Output(1 To EndNum - StartNum + 1)
+    
+    For I = StartNum To EndNum
+        Output(I - StartNum + 1) = Array1D(I)
+    Next I
+    
+    '出力
+    ExtractArray1D = Output
+    
+End Function
+
+Private Sub CheckArray1D(InputArray, Optional HairetuName As String = "配列")
+'入力配列が1次元配列かどうかチェックする
+'20210804
+
+    Dim Dummy As Integer
+    On Error Resume Next
+    Dummy = UBound(InputArray, 2)
+    On Error GoTo 0
+    If Dummy <> 0 Then
+        MsgBox (HairetuName & "は1次元配列を入力してください")
+        Stop
+        Exit Sub '入力元のプロシージャを確認するために抜ける
+    End If
+
+End Sub
+
+Private Sub CheckArray1DStart1(InputArray, Optional HairetuName As String = "配列")
+'入力1次元配列の開始番号が1かどうかチェックする
+'20210804
+
+    If LBound(InputArray, 1) <> 1 Then
+        MsgBox (HairetuName & "の開始要素番号は1にしてください")
+        Stop
+        Exit Sub '入力元のプロシージャを確認するために抜ける
+    End If
+
+End Sub
+
+Private Function ExtractArray(Array2D, StartRow As Long, StartCol As Long, EndRow As Long, EndCol As Long)
+'二次元配列の指定範囲を配列として抽出する
+'20210917
+
+'引数
+'Array2D ・・・二次元配列
+'StartRow・・・抽出範囲の開始行番号
+'StartCol・・・抽出範囲の開始列番号
+'EndRow  ・・・抽出範囲の終了行番号
+'EndCol  ・・・抽出範囲の終了列番号
+                                   
+    '引数チェック
+    Call CheckArray2D(Array2D, "Array2D")
+    Call CheckArray2DStart1(Array2D, "Array2D")
+    
+    Dim I As Long
+    Dim J As Long
+    Dim M As Long
+    Dim N As Long
+    N = UBound(Array2D, 1) '行数
+    M = UBound(Array2D, 2) '列数
+    
+    If StartRow > EndRow Then
+        MsgBox ("抽出範囲の開始行「StartRow」は、終了行「EndRow」以下でなければなりません")
+        Stop
+        End
+    ElseIf StartCol > EndCol Then
+        MsgBox ("抽出範囲の開始列「StartCol」は、終了列「EndCol」以下でなければなりません")
+        Stop
+        End
+    ElseIf StartRow < 1 Then
+        MsgBox ("抽出範囲の開始行「StartRow」は1以上の値を入れてください")
+        Stop
+        End
+    ElseIf StartCol < 1 Then
+        MsgBox ("抽出範囲の開始列「StartCol」は1以上の値を入れてください")
+        Stop
+        End
+    ElseIf EndRow > N Then
+        MsgBox ("抽出範囲の終了行「StartRow」は抽出元の二次元配列の行数" & N & "以下の値を入れてください")
+        Stop
+        End
+    ElseIf EndCol > M Then
+        MsgBox ("抽出範囲の終了列「StartCol」は抽出元の二次元配列の列数" & M & "以下の値を入れてください")
+        Stop
+        End
+    End If
+    
+    '処理
+    Dim Output
+    ReDim Output(1 To EndRow - StartRow + 1, 1 To EndCol - StartCol + 1)
+    
+    For I = StartRow To EndRow
+        For J = StartCol To EndCol
+            Output(I - StartRow + 1, J - StartCol + 1) = Array2D(I, J)
+        Next J
+    Next I
+    
+    '出力
+    ExtractArray = Output
+    
+End Function
+
+Private Sub CheckArray2D(InputArray, Optional HairetuName As String = "配列")
+'入力配列が2次元配列かどうかチェックする
+'20210804
+
+    Dim Dummy2 As Integer
+    Dim Dummy3 As Integer
+    On Error Resume Next
+    Dummy2 = UBound(InputArray, 2)
+    Dummy3 = UBound(InputArray, 3)
+    On Error GoTo 0
+    If Dummy2 = 0 Or Dummy3 <> 0 Then
+        MsgBox (HairetuName & "は2次元配列を入力してください")
+        Stop
+        Exit Sub '入力元のプロシージャを確認するために抜ける
+    End If
+
+End Sub
+
+Private Sub CheckArray2DStart1(InputArray, Optional HairetuName As String = "配列")
+'入力2次元配列の開始番号が1かどうかチェックする
+'20210804
+
+    If LBound(InputArray, 1) <> 1 Or LBound(InputArray, 2) <> 1 Then
+        MsgBox (HairetuName & "の開始要素番号は1にしてください")
+        Stop
+        Exit Sub '入力元のプロシージャを確認するために抜ける
+    End If
+
+End Sub
+
+Private Function UnionArray1D(UpperArray1D, LowerArray1D)
+'一次元配列同士を結合して1つの配列とする。
+'20210923
+
+'UpperArray1D・・・上に結合する一次元配列
+'LowerArray1D・・・下に結合する一次元配列
+
+    '引数チェック
+    Call CheckArray1D(UpperArray1D, "UpperArray1D")
+    Call CheckArray1DStart1(UpperArray1D, "UpperArray1D")
+    Call CheckArray1D(LowerArray1D, "LowerArray1D")
+    Call CheckArray1DStart1(LowerArray1D, "LowerArray1D")
+    
+    '処理
+    Dim I  As Long
+    Dim N1 As Long
+    Dim N2 As Long
+    N1 = UBound(UpperArray1D, 1)
+    N2 = UBound(LowerArray1D, 1)
+    Dim Output
+    ReDim Output(1 To N1 + N2)
+    For I = 1 To N1
+        Output(I) = UpperArray1D(I)
+    Next I
+    For I = 1 To N2
+        Output(N1 + I) = LowerArray1D(I)
+    Next I
+    
+    '出力
+    UnionArray1D = Output
+    
+End Function
+
+Private Function F_Minverse(ByVal Matrix)
+    '20210603改良
+    'F_Minverse(input_M)
+    'F_Minverse(配列)
+    '余因子行列を用いて逆行列を計算
+    
+    '入力値チェック及び修正※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    '行列の開始要素を1に変更（計算しやすいから）
+    If LBound(Matrix, 1) <> 1 Or LBound(Matrix, 2) <> 1 Then
+        Matrix = Application.Transpose(Application.Transpose(Matrix))
+    End If
+    
+    '入力値のチェック
+    Call 正方行列かチェック(Matrix)
+    
+    '計算処理※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    Dim I        As Integer
+    Dim J        As Integer
+    Dim N        As Integer
+    Dim Output() As Double
+    N = UBound(Matrix, 1)
+    ReDim Output(1 To N, 1 To N)
+    
+    Dim detM As Double '行列式の値を格納
+    detM = F_MDeterm(Matrix) '行列式を求める
+    
+    Dim Mjyokyo '指定の列・行を除去した配列を格納
+    
+    For I = 1 To N '各列
+        For J = 1 To N '各行
+            
+            'I列,J行を除去する
+            Mjyokyo = F_Mjyokyo(Matrix, J, I)
+            
+            'I列,J行の余因子を求めて出力する逆行列に格納
+            Output(I, J) = F_MDeterm(Mjyokyo) * (-1) ^ (I + J) / detM
+    
+        Next J
+    Next I
+    
+    '出力※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    F_Minverse = Output
+    
+End Function
+
+Private Sub 正方行列かチェック(Matrix)
+    '20210603追加
+    
+    If UBound(Matrix, 1) <> UBound(Matrix, 2) Then
+        MsgBox ("正方行列を入力してください" & vbLf & _
+                "入力された配列の要素数は" & "「" & _
+                UBound(Matrix, 1) & "×" & UBound(Matrix, 2) & "」" & "です")
+        Stop
+        End
+    End If
+
+End Sub
+
+Private Function F_MDeterm(Matrix)
+    '20210603改良
+    'F_MDeterm(Matrix)
+    'F_MDeterm(配列)
+    '行列式を計算
+    
+    '入力値チェック及び修正※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    '行列の開始要素を1に変更（計算しやすいから）
+    If LBound(Matrix, 1) <> 1 Or LBound(Matrix, 2) <> 1 Then
+        Matrix = Application.Transpose(Application.Transpose(Matrix))
+    End If
+    
+    '入力値のチェック
+    Call 正方行列かチェック(Matrix)
+    
+    '計算処理※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    Dim I As Integer
+    Dim J As Integer
+    Dim K As Integer
+    Dim N As Integer
+    N = UBound(Matrix, 1)
+    
+    Dim Matrix2 '掃き出しを行う行列
+    Matrix2 = Matrix
+    
+    For I = 1 To N '各列
+        For J = I To N '掃き出し元の行の探索
+            If Matrix2(J, I) <> 0 Then
+                K = J '掃き出し元の行
+                Exit For
+            End If
+            
+            If J = N And Matrix2(J, I) = 0 Then '掃き出し元の値が全て0なら行列式の値は0
+                F_MDeterm = 0
+                Exit Function
+            End If
+            
+        Next J
+        
+        If K <> I Then '(I列,I行)以外で掃き出しとなる場合は行を入れ替え
+            Matrix2 = F_Mgyoirekae(Matrix2, I, K)
+        End If
+        
+        '掃き出し
+        Matrix2 = F_Mgyohakidasi(Matrix2, I, I)
+              
+    Next I
+    
+    
+    '行列式の計算
+    Dim Output As Double
+    Output = 1
+    
+    For I = 1 To N '各(I列,I行)を掛け合わせていく
+        Output = Output * Matrix2(I, I)
+    Next I
+    
+    '出力※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    F_MDeterm = Output
+    
+End Function
+
+Private Function F_Mgyoirekae(Matrix, Row1 As Integer, Row2 As Integer)
+    '20210603改良
+    'F_Mgyoirekae(Matrix, Row1, Row2)
+    'F_Mgyoirekae(配列,指定行番号①,指定行番号②)
+    '行列Matrixの①行と②行を入れ替える
+    
+    Dim I     As Integer
+    Dim J     As Integer
+    Dim K     As Integer
+    Dim M     As Integer
+    Dim N     As Integer
+    Dim Output
+    
+    Output = Matrix
+    M = UBound(Matrix, 2) '列数取得
+    
+    For I = 1 To M
+        Output(Row2, I) = Matrix(Row1, I)
+        Output(Row1, I) = Matrix(Row2, I)
+    Next I
+    
+    F_Mgyoirekae = Output
+End Function
+
+Private Function F_Mgyohakidasi(Matrix, Row As Integer, Col As Integer)
+    '20210603改良
+    'F_Mgyohakidasi(Matrix, Row, Col)
+    'F_Mgyohakidasi(配列,指定行,指定列)
+    '行列MatrixのRow行､Col列の値で各行を掃き出す
+    
+    Dim I     As Integer
+    Dim J     As Integer
+    Dim N     As Integer
+    Dim Output
+    
+    Output = Matrix
+    N = UBound(Output, 1) '行数取得
+    
+    Dim Hakidasi '掃き出し元の行
+    Dim X As Double '掃き出し元の値
+    Dim Y As Double
+    ReDim Hakidasi(1 To N)
+    X = Matrix(Row, Col)
+    
+    For I = 1 To N '掃き出し元の1行を作成
+        Hakidasi(I) = Matrix(Row, I)
+    Next I
+    
+    For I = 1 To N '各行
+        If I = Row Then
+            '掃き出し元の行の場合はそのまま
+            For J = 1 To N
+                Output(I, J) = Matrix(I, J)
+            Next J
+        
+        Else
+            '掃き出し元の行以外の場合は掃き出し
+            Y = Matrix(I, Col) '掃き出し基準の列の値
+            For J = 1 To N
+                Output(I, J) = Matrix(I, J) - Hakidasi(J) * Y / X
+            Next J
+        End If
+    
+    Next I
+    
+    F_Mgyohakidasi = Output
+    
+End Function
+
+Private Function F_Mjyokyo(Matrix, Row As Integer, Col As Integer)
+    '20210603改良
+    'F_Mjyokyo(Matrix, Row, Col)
+    'F_Mjyokyo(配列,指定行,指定列)
+    '行列MatrixのRow行、Col列を除去した行列を返す
+    
+    Dim I As Integer
+    Dim J As Integer
+    Dim K As Integer
+    Dim M As Integer
+    Dim N As Integer '数え上げ用(Integer型)
+    Dim Output '指定した行・列を除去後の配列
+    
+    N = UBound(Matrix, 1) '行数取得
+    M = UBound(Matrix, 2) '列数取得
+    ReDim Output(1 To N - 1, 1 To M - 1)
+    
+    Dim I2 As Integer
+    Dim J2 As Integer
+    
+    I2 = 0 '行方向数え上げ初期化
+    For I = 1 To N
+        If I = Row Then
+            'なにもしない
+        Else
+            I2 = I2 + 1 '行方向数え上げ
+            
+            J2 = 0 '列方向数え上げ初期化
+            For J = 1 To M
+                If J = Col Then
+                    'なにもしない
+                Else
+                    J2 = J2 + 1 '列方向数え上げ
+                    Output(I2, J2) = Matrix(I, J)
+                End If
+            Next J
+            
+        End If
+    Next I
+    
+    F_Mjyokyo = Output
+
+End Function
+
+Private Function F_MMult(ByVal Matrix1, ByVal Matrix2)
+    'F_MMult(Matrix1, Matrix2)
+    'F_MMult(配列①,配列②)
+    '行列の積を計算
+    '20180213改良
+    '20210603改良
+    
+    '入力値のチェックと修正※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    '配列の次元チェック
+    Dim JigenCheck1 As Integer
+    Dim JigenCheck2 As Integer
+    On Error Resume Next
+    JigenCheck1 = UBound(Matrix1, 2) '配列の次元が1ならエラーとなる
+    JigenCheck2 = UBound(Matrix2, 2) '配列の次元が1ならエラーとなる
+    On Error GoTo 0
+    
+    '配列の次元が1なら次元2にする。例)配列(1 to N)→配列(1 to N,1 to 1)
+    If IsEmpty(JigenCheck1) Then
+        Matrix1 = Application.Transpose(Matrix1)
+    End If
+    If IsEmpty(JigenCheck2) Then
+        Matrix2 = Application.Transpose(Matrix2)
+    End If
+    
+    '行列の開始要素を1に変更（計算しやすいから）
+    If UBound(Matrix1, 1) = 0 Or UBound(Matrix1, 2) = 0 Then
+        Matrix1 = Application.Transpose(Application.Transpose(Matrix1))
+    End If
+    If UBound(Matrix2, 1) = 0 Or UBound(Matrix2, 2) = 0 Then
+        Matrix2 = Application.Transpose(Application.Transpose(Matrix2))
+    End If
+    
+    '入力値のチェック
+    If UBound(Matrix1, 2) <> UBound(Matrix2, 1) Then
+        MsgBox ("配列1の列数と配列2の行数が一致しません。" & vbLf & _
+               "(出力) = (配列1)(配列2)")
+        Stop
+        End
+    End If
+    
+    '計算処理※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    Dim I        As Integer
+    Dim J        As Integer
+    Dim K        As Integer
+    Dim M        As Integer
+    Dim N        As Integer
+    Dim M2       As Integer
+    Dim Output() As Double '出力する配列
+    N = UBound(Matrix1, 1) '配列1の行数
+    M = UBound(Matrix1, 2) '配列1の列数
+    M2 = UBound(Matrix2, 2) '配列2の列数
+    
+    ReDim Output(1 To N, 1 To M2)
+    
+    For I = 1 To N '各行
+        For J = 1 To M2 '各列
+            For K = 1 To M '(配列1のI行)と(配列2のJ列)を掛け合わせる
+                Output(I, J) = Output(I, J) + Matrix1(I, K) * Matrix2(K, J)
+            Next K
+        Next J
+    Next I
+    
+    '出力※※※※※※※※※※※※※※※※※※※※※※※※※※※
+    F_MMult = Output
+    
 End Function
 
 
