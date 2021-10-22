@@ -10,7 +10,7 @@ Copyright (c) 2021 YujiFukami
 開発テスト環境 OS: Windows 10 Pro
 
 # 使い方
-「ModApproximate.bas」「ModImmediate.bas」「ModMatrix.bas」をVBEにインポートすること。
+「ModApproximate.bas」をVBEにインポートすること。
 
 # 使える関数紹介
 ## Spline(ArrayX1D, ArrayY1D, InputX),SplineXY(ArrayXY2D, InputX)
